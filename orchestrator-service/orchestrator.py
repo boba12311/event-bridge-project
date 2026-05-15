@@ -92,7 +92,7 @@ def setup_infrastructure():
         
         print("\n Инфраструктура готова! Можно запускать сервисы.")
         
-        connection.close()
+        return connection
         
     except pika.exceptions.AMQPConnectionError:
         print("Ошибка: Не удалось подключиться к RabbitMQ", file=sys.stderr)
