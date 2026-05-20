@@ -2,6 +2,7 @@ import pika
 import sys
 import os
 from dotenv import load_dotenv
+import time
 
 # Загружаем переменные из .env
 load_dotenv()
@@ -46,10 +47,30 @@ BINDINGS = {
     ],
 }
 
+def wait_for_rabbitmq(max_retries: int = 15, retry_delay: int = 3):
+    """Ждёт, пока RabbitMQ станет доступен."""
+    for attempt in range(1, max_retries + 1):
+        try:
+            credentials = pika.PlainCredentials(USER, PASSWORD)
+            parameters = pika.ConnectionParameters(host=HOST, port=PORT, credentials=credentials)
+            connection = pika.BlockingConnection(parameters)
+            connection.close()
+            print("✅ RabbitMQ доступен")
+            return
+        except pika.exceptions.AMQPConnectionError:
+            print(
+                "⏳ Ожидание RabbitMQ (попытка %d/%d)...", attempt, max_retries
+            )
+            time.sleep(retry_delay)
+
+    print("❌ RabbitMQ не доступен после %d попыток", max_retries)
+    sys.exit(1)
+
+
 
 def setup_infrastructure():
     """Подключается к RabbitMQ и создаёт всю инфраструктуру."""
-    
+    wait_for_rabbitmq()
     # 1. Подключение
     credentials = pika.PlainCredentials(USER, PASSWORD)
     parameters = pika.ConnectionParameters(
@@ -102,6 +123,16 @@ def setup_infrastructure():
         print(f"Ошибка при настройке: {e}", file=sys.stderr)
         sys.exit(1)
 
+def keep_alive():
+    """Держит сервис запущенным после настройки инфраструктуры."""
+    print("🔄 Orchestrator перешёл в режим ожидания. Инфраструктура настроена.")
+    try:
+        while True:
+            time.sleep(60)
+    except KeyboardInterrupt:
+       print("🛑 Orchestrator остановлен")
+
 
 if __name__ == '__main__':
     setup_infrastructure()
+    keep_alive()

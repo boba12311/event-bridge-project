@@ -1,17 +1,61 @@
-# docker-compose.yml
-version: '3.8'
 services:
   rabbitmq:
     image: rabbitmq:3-management
     container_name: eventbridge_rabbitmq
     ports:
       - "5672:5672"
-      - "15672:15672" # Веб-интерфейс для мониторинга очередей
+      - "15672:15672"
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - eventbridge-net
+
+  orchestrator:
+    build:
+      context: ./orchestrator-service
+    container_name: eventbridge_orchestrator
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASSWORD: guest
+    networks:
+      - eventbridge-net
+
+  api_gateway:
+    build:
+      context: ./api_gateway_service
+    container_name: eventbridge_api_gateway
+    ports:
+      - "8000:8000"
+    depends_on:
+      orchestrator:
+        condition: service_started
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASSWORD: guest
+    networks:
+      - eventbridge-net
+
   redis:
     image: redis:7-alpine
     container_name: eventbridge_redis
     ports:
       - "6379:6379"
+    networks:
+      - eventbridge-net
+
+networks:
+  eventbridge-net:
+    driver: bridge

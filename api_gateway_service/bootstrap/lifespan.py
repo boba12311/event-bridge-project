@@ -14,7 +14,7 @@ from services.rabbitmq import rabbitmq
 async def app_lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
     """Запускает и останавливает жизненный цикл всего приложения"""
 
-    await asyncio.to_thread(rabbitmq.connect)
+    await asyncio.to_thread(rabbitmq.connect_with_retry)
 
     # startup
     yield
