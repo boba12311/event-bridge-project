@@ -18,8 +18,13 @@ def create_app() -> FastAPI:
 
     app.include_router(register_router)
 
-    @app.get("/")
+    @app.get(
+        "/",
+        summary="Проверка доступности API",
+        description="Проверяет, что сервис доступен и работает",
+    )
     async def root() -> dict[str, str]:
+        """Возвращает статус "OK" и сообщение о том, что сервис работает"""
         return {"status": "OK", "message": "Event Bridge Event API is running"}
 
     return app
