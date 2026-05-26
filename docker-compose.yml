@@ -56,6 +56,31 @@ services:
     networks:
       - eventbridge-net
 
+  analytics_service:
+    build:
+      context: ./analytics_service
+    container_name: eventbridge_analytics
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASS: guest
+      RABBITMQ_QUEUE: analytics_queue
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_DB: 0
+      STATS_INTERVAL: 10
+      RECONNECT_DELAY: 5
+      MAX_RECONNECT_ATTEMPTS: 0
+    networks:
+      - eventbridge-net
+    restart: unless-stopped
+
 networks:
   eventbridge-net:
     driver: bridge
