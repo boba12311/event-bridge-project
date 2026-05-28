@@ -27,7 +27,7 @@ services:
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
       RABBITMQ_USER: guest
-      RABBITMQ_PASSWORD: guest
+      RABBITMQ_PASS: guest
     networks:
       - eventbridge-net
 
@@ -73,6 +73,54 @@ services:
       - "6379:6379"
     networks:
       - eventbridge-net
+
+  postgres:
+    image: postgres:16
+    container_name: eventbridge_postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: event_bridge
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - eventbridge-net
+
+  # DATABASE SERVICE
+  database_service:
+    build:
+      context: ./database_service
+    container_name: eventbridge_database_service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: event_bridge
+
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASS: guest
+
+      QUEUE_NAME: db_log_queue
+    networks:
+      - eventbridge-net
+
+volumes:
+  postgres_data:
 
 networks:
   eventbridge-net:
