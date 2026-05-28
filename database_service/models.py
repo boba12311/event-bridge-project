@@ -1,4 +1,3 @@
-# database_service/models.py
 """
 Pydantic-модели для валидации входящих данных из RabbitMQ.
 """
