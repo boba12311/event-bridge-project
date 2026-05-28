@@ -48,6 +48,24 @@ services:
     networks:
       - eventbridge-net
 
+  email_service:
+    build:
+      context: ./email-service
+    container_name: eventbridge_email_service
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      orchestrator:
+        condition: service_started
+    restart: on-failure
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASS: guest
+    networks:
+      - eventbridge-net
+
   redis:
     image: redis:7-alpine
     container_name: eventbridge_redis

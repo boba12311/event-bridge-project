@@ -22,5 +22,5 @@ if __name__ == '__main__':
     send_test_event(TEST_VIP_EVENT, 'event.registered.vip')
     time.sleep(1)
     # Тест Regular
-    reg = RegistrationEvent(is_vip=False, user_email="test@local.ru", user_name="Анна", event_name="Meetup")
+    reg = RegistrationEvent(is_vip=False, user_email="test@local.ru", user_name="Андрей", event_name="Meetup")
     send_test_event(reg.model_dump(), 'event.registered.regular')
