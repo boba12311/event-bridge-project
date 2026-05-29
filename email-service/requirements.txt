@@ -1,0 +1,4 @@
+pika==1.4.0
+pydantic==2.12.5
+email-validator==2.3.0
+python-dotenv==1.2.2

@@ -2,7 +2,16 @@
 > **EventBridge 2.0 — Микросервисная архитектура с RabbitMQ**
 
 Вы — владелец своего модуля. Вы работаете в своей «песочнице» (ветке) и предлагаете свои изменения команде через **Pull Request**.
+# 1. Docker — только RabbitMQ (уже запущен)
+docker compose up rabbitmq -d
 
+# 2. Email-service — из папки email-service
+cd event-bridge-project\email-service
+..\.venv\Scripts\python.exe main.py
+
+# 3. В другом терминале — тестовое событие
+cd event-bridge-project
+.\.venv\Scripts\python.exe test_publisher.py
 ---
 
 ## 📋 Оглавление

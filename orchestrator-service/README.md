@@ -8,6 +8,7 @@
    - Вкладка **Exchanges** → есть `event_topic_exchange` (type: topic, durable: ✓)
    - Вкладка **Queues** → все 8 очередей созданы (durable: ✓)
    - В bindings exchange → 3 правила маршрутизации
+7. Для просмотра содержимого очередей в реальном нужно запустить `python monitor_all_queues.py` после запуска оркестратора
 
 ## Пример .env
 ```

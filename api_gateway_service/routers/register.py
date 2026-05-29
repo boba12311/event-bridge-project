@@ -1,9 +1,9 @@
 """Роуты для регистрации"""
 
-from fastapi import APIRouter, HTTPException, status
-from datetime import datetime, timezone
 import uuid
+from datetime import datetime, timezone
 
+from fastapi import APIRouter, HTTPException, status
 from schemas.register import (
     RegisterUserRequest,
     RegisterUserResponseSuccess,
@@ -15,10 +15,24 @@ router = APIRouter(tags=["registration"])
 
 @router.post(
     "/register",
-    summary="Регистрация нового пользователя",
-    description="Регистрирует нового пользователя",
-    response_model=RegisterUserResponseSuccess,
+    summary="Регистрация участника мероприятия",
+    description=(
+        """
+Принимает JSON с данными пользователя, валидирует email и структуру.
+
+Генерирует `UUID` регистрации, фиксирует timestamp и публикует событие в `RabbitMQ`.
+
+При `is_vip=true` сообщение уходит в `event.registered.vip`, иначе в `event.registered.regular`.
+        """
+    ),
+    response_description="ID созданной регистрации и статус принятия в обработку",
     status_code=status.HTTP_202_ACCEPTED,
+    responses={
+        422: {
+            "description": "Ошибка валидации полей (невалидный email или отсутствие обязательных полей)"
+        },
+        503: {"description": "RabbitMQ недоступен, событие не опубликовано"},
+    },
 )
 async def register(request: RegisterUserRequest):
     # 1. Генерируем ID
@@ -33,6 +47,7 @@ async def register(request: RegisterUserRequest):
         "user_email": request.user_email,
         "user_name": request.user_name,
         "is_vip": request.is_vip,
+        "body": request.body,
     }
 
     # 3. Определяем routing key
@@ -46,7 +61,7 @@ async def register(request: RegisterUserRequest):
     except Exception:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Сервис временно недоступен. Попробуйте позже.",
+            detail="Сервис временно недоступен. Попробуйте позже",
         )
 
     # 5. Возвращаем успех

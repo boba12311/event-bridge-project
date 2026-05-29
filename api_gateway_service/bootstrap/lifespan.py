@@ -1,12 +1,11 @@
 """Файл отвечает за жизненный цикл приложения (за события startup/shutdown)"""
 
 # Асинхронность
+import asyncio
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-import asyncio
 
 from fastapi import FastAPI
-
 from services.rabbitmq import rabbitmq
 
 

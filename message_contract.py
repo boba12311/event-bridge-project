@@ -16,6 +16,6 @@ class RegistrationEvent(BaseModel):
 TEST_VIP_EVENT = RegistrationEvent(
     event_name="Python Summit 2026",
     user_email="student@university.ru",
-    user_name="Иван Петров",
+    user_name="Андрей",
     is_vip=True
 ).model_dump()
